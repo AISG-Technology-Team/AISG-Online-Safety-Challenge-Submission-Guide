@@ -1,0 +1,4 @@
+# Add more or remove these sample requirements
+numpy
+opencv-contrib-python-headless
+pytesseract
