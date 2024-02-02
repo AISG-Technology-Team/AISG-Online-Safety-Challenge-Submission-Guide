@@ -1,6 +1,7 @@
 # Standard Python Library
 import sys
 import logging
+import random
 
 # Import opencv
 import cv2
@@ -51,10 +52,16 @@ def get_image_inpainted(image, image_mask):
 
 
 def classifier(image, text):
-    # Harmful = 1, Benign = 0
-    harmful = 0
+    # Random number generator to simulate a proba output
+    # float values ranging from 0-1
+    proba = random.random()
 
-    return harmful
+    # Using proba and some pre-fixed threshold to simulate a label output
+    # label values of int : Hateful = 1, Not Hateful = 0
+    threshold = 0.5
+    label = int(proba >= threshold)
+
+    return proba, label
 
 
 def process_line_by_line(*, filepath):
@@ -80,9 +87,9 @@ def process_line_by_line(*, filepath):
 
     # 4. Get classification =========================================== #
     # Process text and image for harmful/not harmful
-    classification = classifier(image=im_inpainted, text=text)
+    proba, label = classifier(image=im_inpainted, text=text)
 
-    return classification
+    return proba, label
 
 
 if __name__ == "__main__":
@@ -93,10 +100,10 @@ if __name__ == "__main__":
 
         try:
             # Process the image
-            result = process_line_by_line(filepath=image_path)
+            proba, label = process_line_by_line(filepath=image_path)
 
             # Ensure each result for each image_path is a new line
-            sys.stdout.write(str(result) + "\n")
+            sys.stdout.write(f"{proba:.4f}\t{label}\n")
 
         except Exception as e:
             # Output to any raised/caught error/exceptions to stderr

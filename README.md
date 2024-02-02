@@ -1,16 +1,16 @@
 # AI Singapore Online Safety Prize Challenge Submission Guide
 
-Participants must submit a **compressed Docker container in the tar.gz format** via the [challenge platform](https://ospc.aisingapore.org/).  This repository serves as a step by step guide to help participants with creating a valid submission for the Online Safety Prize Challenge.
+Participants must submit a **compressed Docker container in the tar.gz format** via the [challenge platform](https://ospc.aisingapore.org/). This repository serves as a step by step guide to help participants with creating a valid submission for the Online Safety Prize Challenge.
+
+While the proper term for the Docker generated artefacts is "Docker images", we will use the term "Docker container" instead to disambiguate it from the [computer] images that serve as input to the challenge.
 
 ## Getting Started
 
 We are using Docker for this challenge so that participants can choose their preferred programming languages and open source dependencies to create the best performing detection models.
 
-While the proper term for the Docker generated artefacts is "Docker images", we will use the term "Docker container" instead to disambiguate it from the [computer] images that serve as input to the challenge.
-
 To build and run GPU accelerated Docker containers, please install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) in your development environment.
 
-## Important Notice
+## Technical Details
 
 ### Hardware/Software Specifications
 
@@ -24,56 +24,108 @@ This will be reflected in the `docker run` command options. Participants may spe
 
 The general software specification
 * Ubuntu 22.04
-* NVIDIA Driver Version: 535.129.03
+* NVIDIA Driver Version: 535
     * CUDA 11.x-12.x
-    * Check for [CUDA - NVIDIA Driver Compatability](https://docs.nvidia.com/deploy/cuda-compatibility/)
+    * Check for [CUDA - NVIDIA Driver Compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/)
 
 
-### Execution Guidelines
-This section will cover several important guidelines on building your solution for submission.
+### Submission Specification Guidelines
+This section will cover important guidelines on building your solution for submission, such as:
 
->**Note 1: Use `stdin` as input and `stdout` as output**
->
-> Your solution must use `stdin`, where each line from `stdin` is a mounted file path to a single image. This simulates a real-world situation whereby your solution will be called on a per-image basis. Further details on how this is done for a Python Docker solution is detailed [Usage of sample submission](#usage-of-sample-submission) and [Creating your own submission](#creating-your-own-submission)
->
->
-> Your solution must use `stdout`, to output the result of your analysis for each `stdin` (represents a single image filepath). Your output must be either a `1` or `0`; representing `harmful` or `not harmful`. Further details on how this is done for a Python Docker solution is detailed [Usage of sample submission](#usage-of-sample-submission) and [Creating your own submission](#creating-your-own-submission).
->
-> For each line of text from `stdin` that is piped into your solution, there needs to be a corresponding output line conforming to the output standards piped to `stdout`. Please do not attempt to skip any.
->
-> **_Failure to do so may result in inaccurate scoring of your results._**
+1. A short brief on the dataset;
+1. How your submitted Docker container will interact with the dataset;
+1. How your submitted Docker container needs to emit your results;
+1. As well as other relevant details.
 
->**Note 2: Ensure you DO NOT ATTEMPT to "over log" (`stderr`)**
->
-> Your solution must use `stderr` for the writing of any logs to assist you in determining any programming errors within your solution. Take note that logs are given  a file size limit. Failure to follow this limit by logging excessively will result in an error in your solution.
->
-> Further details on how this is done for a Python Docker solution can be found in [Usage of sample submission](#usage-of-sample-submission) and [Creating your own submission](#creating-your-own-submission)
->
-> **_Non-compliance may result in premature termination of your solution with a Resource Limit Exceeded error._**
+#### Dataset, Input, Output
 
->**Note 3: Max Docker Container Size**
->
-> Your solution upon saving [using docker save](#compress-your-docker-container-to-targz-format-using-docker-save) must not exceed the maximum filesize of 25 GiB.
->
+##### Dataset:
 
->**Note 4: Max Docker Container Runtime**
->
-> Your solution must not exceed 2.5 hours of runtime to process around 1700 images.
->
-> **_Non-compliance will result in a Time Limit Exceeded error._**
+The dataset comprises about 1700 images in PNG format with file extension `.png`. The directory containing the dataset will be mounted to your Docker container as read-only at the mount point of `/images`.
+
+##### Input to Docker Container:
+
+Your solution must use `stdin`, where each line from `stdin` corresponds to a file path to a single image. This simulates a real-world situation where your solution is called on a per-image basis. An example of a line of input from `stdin` might look like `/images/9ad157be-f32f-4770-b409-8c4650478f5b.png` .
+
+Further details on how this is done for a Python-based Docker solution can be found in [Usage of sample submission](#usage-of-sample-submission) and [Creating your own submission](#creating-your-own-submission).
+
+##### Output (`stdout`, `stderr`) to Container:
+
+###### Solution output: `stdout`
+
+Your solution must use `stdout` to output the result of your analysis for each line of input from `stdin`.
+
+The output format per line of input of `stdin` must include:
+* The probability that the meme is harmful with 4 decimal places of precision. We will refer to this as `proba`.
+* An integer, where `1` is output if the meme is deemed harmful, and `0` if it is not harmful. We will refer to this as `label`.
+
+Both predictions must be separated by a single tab character (`\t`), and terminated with a single new line character (`\n`).
+
+Examples of implementation for the formatting of one line of output in Python can be seen below.
+
+```
+# Example 1:
+output = f"{proba:.4f}\t{label}\n"
+
+# Example 2 (more C-like)
+output = "%.4f\t%d\n" % (proba, label)
+
+sys.stdout.write(output)
+```
+
+Below shows an example of how `stdout` will look like after having processed (in this case) 5 lines of input from `stdin`:
+
+```
+0.8232	1
+0.7665	1
+0.3241	0
+0.1015	0
+0.9511	1
+```
+
+Further details on how this is done for a Python-based Docker solution can be found in [Usage of sample submission](#usage-of-sample-submission) and [Creating your own submission](#creating-your-own-submission).
+
+Remember that there has to be one output format conforming line in `stdout` for every input line from `stdin`. Please do not attempt to skip any.
+
+**_Failure to do so may result in inaccurate scoring of your results._**
+
+###### Logging output: `stderr`
+
+Your solution must use `stderr` for the writing of any logs to assist you in determining any programming errors within your solution. Logs have an implied file size limit to prevent abuse. Failure to keep within this limit through excessive logging will result in an error in your solution.
+
+Further details on how this is done for a Python-based Docker solution can be found in [Usage of sample submission](#usage-of-sample-submission) and [Creating your own submission](#creating-your-own-submission).
+
+**_Non-compliance may result in premature termination of your solution with a Resource Limit Exceeded error._**
+
+Logs may be obtained only on a case-by-case basis. Requests can be made over at the discussion board, but the fulfilment of the request on the discretion of the organisers.
 
 
->**Note 5: Submitted Docker Container Isolation**
->
-> Your solution must have all its necessary modules, model weights, etc pre-packaged in your Docker container. This is because there will be a multi-layered network isolation to ensure your Docker container is isolated without internet connectivity or the ability to access external resources or data.
->
-> **_Non-compliance will result in your Docker container facing issues/error when trying to access external resources._**
+#### Performance Metric Details
+
+The performance metrics used are Area Under the Curve of the Receiver Operating Characteristic (**_AUC ROC_**) and **_accuracy_**. Both metrics will be displayed on the leaderboard.
+
+1. The `proba` output is used to calculate **_AUC ROC_** and used to determine your ranking on the leaderboard.
+1. The `label` output is used to calculate **_accuracy_**, and used as secondary metric in the event of a tie.
 
 
-## Usage of sample submission
+#### Docker Container Details
 
+##### Max Docker Container Size
+Your solution upon saving [using docker save](#compress-your-docker-container-to-targz-format-using-docker-save) must not exceed the maximum file size of 25 GiB.
+
+##### Max Docker Container Runtime
+Your solution must not exceed 2.5 hours of runtime to process around 1700 images.
+
+##### Submitted Docker Container Isolation
+All submitted Docker containers are executed in a network isolated environment where there is no internet connectivity, nor access to any other external resources or data beyond what the container has.
+
+As such, your solution must have all necessary modules, model weights, and other non-proprietary dependencies pre-packaged in your Docker container.
+
+**_Non-compliance will result in your Docker container facing issues/error when in operation._**
+
+## Example: Usage of sample submission
 ### Pre-condition: Create the isolated Docker network
-Before participants try out using the [sample submission](#usage-of-sample-submission) or go on to [create your own submission](#creating-your-own-submission), they need to create a local Docker network to simulate the environment setup for the execution of solutions.
+Before trying out the [sample submission](#usage-of-sample-submission) or [creating your own submission](#creating-your-own-submission), you will need to create a local Docker network to simulate the environment setup for the execution of solutions.
 
 Run the following command to create your own isolated Docker network. If it is already created, you can skip this step.
 
@@ -93,10 +145,10 @@ docker network create \
 ### Clone this repository and navigate to it
 
 ```
-git clone https://github.com/AISG-Technology-Team/xxxxxxx.git
+git clone https://github.com/AISG-Technology-Team/AISG-Online-Safety-Challenge-Submission-Guide.git
 ```
 
-### Change into the sample submission directory
+### Change into the sample submission (`sample_submission`) directory
 
 ```
 cd sample_submission
@@ -119,6 +171,7 @@ Please ensure you are in the parent directory before executing the following com
 Alter the options for `--cpus`, `--gpus`, `--memory` to suit the system you are using to test.
 
 Ensure that you are not in the main project directory and not in `sample_submission` directory before you execute the command below.
+
 ```
 ISOLATED_DOCKER_NETWORK_NAME=exec_env_jail_network
 
@@ -142,17 +195,19 @@ docker run --init \
  1>local_test/test_output/stdout.csv \
  2>local_test/test_output/stderr.csv
 ```
+
 _Please note that the above `docker run` command would be equivalent to running the following command locally:_
 
 ```
 cat local_test/test_stdin/stdin.csv | \
-    python3 sample_submission/main.py  \
+    python3 sample_submission/main.py \
         1>local_test/test_output/stdout.csv \
         2>local_test/test_output/stderr.csv
 ```
 
 ### (Optional) Adding own images
-You can add a few more custom meme images (`.png`) into `local_test/test_images`. After doing that, you can regenerate the `stdin.csv` located in `local_test/test_stdin` using the following command.
+You can add a few more custom images (of the PNG format with file extension `.png`) into `local_test/test_images`. After doing that, you can regenerate the `stdin.csv` located in `local_test/test_stdin` using the following command.
+
 ```
 cd utils
 
@@ -168,12 +223,14 @@ You can then re-run the [Test sample Docker container locally](#test-sample-dock
 docker save sample_container:latest | gzip > sample_container.tar.gz
 ```
 
-### Upload sample container
+### Upload container
 
-Submit your `sample_container.tar.gz` file onto the [challenge platform](https://ospc.aisingapore.org/). Please note that if you do this, it will take up one count of your submission quota.
+The final step would be to submit the compressed Docker container file (`sample_container.tar.gz` in this example) on to the challenge platform, but since this is only the sample with no actual logic, we will *not* do so.
+
+Please note that if you do submit this sample, it will still take up one count of your submission quota.
 
 
-## Creating your own submission
+## Example: Creating your own submission
 
 The process of creating your own submission would be very similar to using the aforementioned sample submission.
 
@@ -187,14 +244,12 @@ mkdir Online-Safety-Challenge && cd Online-Safety-Challenge
 
 The main file has to be able to interact with standard streams such as `stdin`, `stdout`, and `stderr`.
 
-<!-- - `-input` is a directory which contains all videos of the test set, e.g. /images/ ('/' should appear at the end of the line)
-- `-output` is the name (with path) of the output file, e.g. /data/output/submission.csv -->
-
 In general, the main file should have the following characteristics:
 
-1. Read the PNG images from the file paths obtained from `stdin` (file path per line);
-1. Predict whether each input meme image is `0` for benign, or `1` for harmful;
-1. Output a single prediction per line of `stdout` for each line of `stdin`, using `\n` as the line separator;
+1. Read the PNG images from the file paths obtained from `stdin` (one file path per input line);
+1. Predict the probability that the image is a harmful meme, up to 4 decimal places (`proba` as referred to in the [Submission Specification Guidelines](#submission-specification-guidelines));
+1. Decide if the image is a harmful meme (`1`), or a non-harmful meme (`0`) (`label` as referred to in the [Submission Specification Guidelines](#submission-specification-guidelines));
+1. Output a single line with to `stdout` for each line of `stdin` conforming to the [Submission Specification Guidelines](#submission-specification-guidelines);
 1. Use `stderr` to log any necessary exceptions/errors.
 
 >**Note:**
@@ -204,7 +259,6 @@ In general, the main file should have the following characteristics:
 > You must use `/tmp` within your Docker container for any temporary files for processing. This is because the Docker container will be executed with the options:
 > - `--read-only` which sets the root file-system as read only.
 > - `--tmpfs /tmp` which sets a fixed `/tmp` directory for any app to write to.
-
 
 You may refer to the [`main.py`](sample_submission/main.py) of the sample submission as an example of a main file.
 
@@ -240,18 +294,18 @@ mkdir local_test && cd local_test
 mkdir test_images test_output
 ```
 
-#### 3. Add test meme images (`.png`) into `test_images` directory
+#### 3. Add test images (PNG format with file extension `.png`) into `test_images` directory
 
 #### 4. Generate the input file (`.csv`).
 
-You can use the following script `utils/gen_input.py` in the AISG-Online-Safety-Challenge-Submission-Guide to generate the `stdin.csv` which will be used as the source for `stdin`.
+You can use the following script `utils/gen_input.py` in this guide to generate the `stdin.csv` which will be used as the source for `stdin`.
 
 ```
 # Using the default location for the test_images and output_folder for storing stdin.csv
 python3 gen_input.py --image_folder ../local_test/test_images --output_folder ../local_test/test_stdin
 ```
 
-The script will create a `stdin.csv` file within `local_test/test_stdin` which will be used as the input for your Docker container.
+The script will create a `stdin.csv` file within `local_test/test_stdin` which will be used as the source of input for `stdin` for your Docker container.
 
 #### 5. Test your container using [`docker run`](https://docs.docker.com/engine/reference/run/)
 
@@ -260,6 +314,8 @@ Please ensure you are in the parent directory before executing the following com
 Alter the options for `--cpus`, `--gpus`, `--memory` to suit the system you are using to test.
 
 ```
+ISOLATED_DOCKER_NETWORK_NAME=exec_env_jail_network
+
 cat local_test/test_stdin/stdin.csv | \
 docker run --init \
         --attach "stdin" \
@@ -281,7 +337,6 @@ docker run --init \
  2>local_test/test_output/stderr.csv
 ```
 
-
 ### Compress your Docker container to `.tar.gz` format using [`docker save`](https://docs.docker.com/engine/reference/commandline/save/)
 
 ```
@@ -290,4 +345,4 @@ docker save your_container:latest | gzip > your_container.tar.gz
 
 ### Upload your container
 
-Submit your `your_container.tar.gz` file onto the [challenge platform](https://ospc.aisingapore.org/). Please note that if you do this, it will take up one count of your submission quota.
+Submit your `your_container.tar.gz` file onto the [challenge platform](https://ospc.aisingapore.org/). Please note that when you do this, it will take up one count of your submission quota.
