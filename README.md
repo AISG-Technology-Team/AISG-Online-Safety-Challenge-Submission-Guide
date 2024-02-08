@@ -1,6 +1,6 @@
 # AI Singapore Online Safety Prize Challenge Submission Guide
 
-Participants must submit a **compressed Docker container in the tar.gz format** via the [challenge platform](https://ospc.aisingapore.org/). This repository serves as a step by step guide to help participants with creating a valid submission for the Online Safety Prize Challenge.
+Participants must submit a **compressed Docker container in the tar.gz format** via the [challenge platform](https://ospc.aisingapore.org/). This repository serves as a step-by-step guide to help participants create a valid submission for the Online Safety Prize Challenge.
 
 While the proper term for the Docker generated artefacts is "Docker images", we will use the term "Docker container" instead to disambiguate it from the [computer] images that serve as input to the challenge.
 
@@ -30,12 +30,15 @@ The general software specification
 
 
 ### Submission Specification Guidelines
-This section will cover important guidelines on building your solution for submission, such as:
+This section will cover the following important guidelines on building your solution for submission:
 
-1. A short brief on the dataset;
-1. How your submitted Docker container will interact with the dataset;
-1. How your submitted Docker container needs to emit your results;
-1. As well as other relevant details.
+1. A brief overview of the dataset;
+1. The required input format for your submitted Docker container and the output format from it;
+1. The maximum resources of a Docker container for each submission;
+1. The performance metrics for this challenge;
+1. Instructions on how to run this repository and create your own submission.
+
+
 
 #### Dataset, Input, Output
 
@@ -57,7 +60,7 @@ Your solution must use `stdout` to output the result of your analysis for each l
 
 The output format per line of input of `stdin` must include:
 * The probability that the meme is harmful with 4 decimal places of precision. We will refer to this as `proba`.
-* An integer, where `1` is output if the meme is deemed harmful, and `0` if it is not harmful. We will refer to this as `label`.
+* An integer, where `1` is output if the meme is deemed harmful, and `0` if it is benign. We will refer to this as `label`.
 
 Both predictions must be separated by a single tab character (`\t`), and terminated with a single new line character (`\n`).
 
@@ -97,14 +100,14 @@ Further details on how this is done for a Python-based Docker solution can be fo
 
 **_Non-compliance may result in premature termination of your solution with a Resource Limit Exceeded error._**
 
-Logs may be obtained only on a case-by-case basis. Requests can be made over at the discussion board, but the fulfilment of the request on the discretion of the organisers.
+Logs may be obtained only on a case-by-case basis. Requests can be made over at the discussion board, but the fulfilment of the request shall be at the discretion of the organisers.
 
 
 #### Performance Metric Details
 
-The performance metrics used are Area Under the Curve of the Receiver Operating Characteristic (**_AUC ROC_**) and **_accuracy_**. Both metrics will be displayed on the leaderboard.
+The performance metrics used are Area Under the Curve of the Receiver Operating Characteristic (**_AUROC_**) and **_accuracy_**. Both metrics will be displayed on the leaderboard.
 
-1. The `proba` output is used to calculate **_AUC ROC_** and used to determine your ranking on the leaderboard.
+1. The `proba` output is used to calculate **_AUROC_** and used to determine your ranking on the leaderboard.
 1. The `label` output is used to calculate **_accuracy_**, and used as secondary metric in the event of a tie.
 
 
@@ -127,7 +130,7 @@ As such, your solution must have all necessary modules, model weights, and other
 ### Pre-condition: Create the isolated Docker network
 Before trying out the [sample submission](#usage-of-sample-submission) or [creating your own submission](#creating-your-own-submission), you will need to create a local Docker network to simulate the environment setup for the execution of solutions.
 
-Run the following command to create your own isolated Docker network. If it is already created, you can skip this step.
+Run the following command to create your own isolated Docker network. If it is already created, as indicated by the output of `docker network ls`, you can skip this step.
 
 ```
 ISOLATED_DOCKER_NETWORK_NAME=exec_env_jail_network
@@ -166,11 +169,9 @@ _Please take note that the "`.`" indicates the current working directory and sho
 
 ### Test sample Docker container locally
 
-Please ensure you are in the parent directory before executing the following command. The `$(pwd)` command in the `--mount` option yields the current working directory. The test is successful if no error messages are seen and a `stdout.csv` is created in the `local_test/test_output` directory.
+Please ensure you are in the parent directory of `sample_submission` before executing the following command. The `$(pwd)` command in the `--mount` option yields the current working directory. The test is successful if no error messages are seen and a `stdout.csv` is created in the `local_test/test_output` directory.
 
 Alter the options for `--cpus`, `--gpus`, `--memory` to suit the system you are using to test.
-
-Ensure that you are not in the main project directory and not in `sample_submission` directory before you execute the command below.
 
 ```
 ISOLATED_DOCKER_NETWORK_NAME=exec_env_jail_network
@@ -248,7 +249,7 @@ In general, the main file should have the following characteristics:
 
 1. Read the PNG images from the file paths obtained from `stdin` (one file path per input line);
 1. Predict the probability that the image is a harmful meme, up to 4 decimal places (`proba` as referred to in the [Submission Specification Guidelines](#submission-specification-guidelines));
-1. Decide if the image is a harmful meme (`1`), or a non-harmful meme (`0`) (`label` as referred to in the [Submission Specification Guidelines](#submission-specification-guidelines));
+1. Decide if the image is a harmful meme (`1`), or a benign meme (`0`) (`label` as referred to in the [Submission Specification Guidelines](#submission-specification-guidelines));
 1. Output a single line with to `stdout` for each line of `stdin` conforming to the [Submission Specification Guidelines](#submission-specification-guidelines);
 1. Use `stderr` to log any necessary exceptions/errors.
 

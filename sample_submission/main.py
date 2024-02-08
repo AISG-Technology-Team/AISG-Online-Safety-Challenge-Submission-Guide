@@ -57,7 +57,7 @@ def classifier(image, text):
     proba = random.random()
 
     # Using proba and some pre-fixed threshold to simulate a label output
-    # label values of int : Hateful = 1, Not Hateful = 0
+    # label values of int : Harmful = 1, Benign = 0
     threshold = 0.5
     label = int(proba >= threshold)
 
@@ -86,7 +86,7 @@ def process_line_by_line(*, filepath):
     im_inpainted = get_image_inpainted(image=im, image_mask=im_mask)
 
     # 4. Get classification =========================================== #
-    # Process text and image for harmful/not harmful
+    # Process text and image for harmful/benign
     proba, label = classifier(image=im_inpainted, text=text)
 
     return proba, label
