@@ -213,7 +213,7 @@ You can add a few more custom images (of the PNG format with file extension `.pn
 cd utils
 
 # Using the default location for the test_images and output_folder for storing stdin.csv
-python3 gen_input.py --image_folder ../local_test/test_images --output_folder ../local_test/test_stdin
+python3 gen_input.py --img_folder ../local_test/test_images --output_folder ../local_test/test_stdin
 ```
 
 You can then re-run the [Test sample Docker container locally](#test-sample-docker-container-locally)
