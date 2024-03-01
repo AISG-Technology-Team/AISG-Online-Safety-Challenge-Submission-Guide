@@ -178,6 +178,7 @@ ISOLATED_DOCKER_NETWORK_NAME=exec_env_jail_network
 
 cat local_test/test_stdin/stdin.csv | \
 docker run --init \
+        --rm \
         --attach "stdin" \
         --attach "stdout" \
         --attach "stderr" \
@@ -319,6 +320,7 @@ ISOLATED_DOCKER_NETWORK_NAME=exec_env_jail_network
 
 cat local_test/test_stdin/stdin.csv | \
 docker run --init \
+        --rm \
         --attach "stdin" \
         --attach "stdout" \
         --attach "stderr" \
