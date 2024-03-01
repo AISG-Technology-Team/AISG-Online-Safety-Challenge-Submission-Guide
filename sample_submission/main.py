@@ -15,7 +15,7 @@ import numpy as np
 
 
 def get_meme_text(image):
-    config = "-l eng+chi_sim+chi_tra+tam+msa --psm 4 --oem 0"
+    config = "-l eng+chi_sim+chi_tra+tam+msa --psm 4 --oem 1"
 
     text = pytesseract.image_to_string(image, config=config)
     d = pytesseract.image_to_data(image, output_type=Output.DICT, config=config)
