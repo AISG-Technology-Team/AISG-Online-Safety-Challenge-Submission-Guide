@@ -23,11 +23,13 @@ All participants' compressed Docker containers will be executed on virtual machi
 This will be reflected in the `docker run` command options. Participants may specify different settings for their own testing purposes, but these will not be reflected in the official run-time environment for scoring.
 
 The general software specification
+* Instruction Set: x86-64
 * Ubuntu 22.04
 * NVIDIA Driver Version: 535
     * CUDA 11.x-12.x
     * Check for [CUDA - NVIDIA Driver Compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/)
 
+**IMPORTANT NOTE**: The following instructions relating to Docker assumes our general software specification. 
 
 ### Submission Specification Guidelines
 This section will cover the following important guidelines on building your solution for submission:
@@ -37,7 +39,6 @@ This section will cover the following important guidelines on building your solu
 1. The maximum resources of a Docker container for each submission;
 1. The performance metrics for this challenge;
 1. Instructions on how to run this repository and create your own submission.
-
 
 
 #### Dataset, Input, Output
