@@ -28,6 +28,8 @@ The general software specification
 * NVIDIA Driver Version: 535
     * CUDA 11.x-12.x
     * Check for [CUDA - NVIDIA Driver Compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/)
+* Docker Version: 24.0.7
+* NVIDIA Container Toolkit: 1.14.4-1
 
 **IMPORTANT NOTE**: The following instructions relating to Docker assumes our general software specification. 
 
